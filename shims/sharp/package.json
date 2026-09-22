@@ -1,0 +1,15 @@
+﻿{
+  "name": "sharp",
+  "version": "0.35.4",
+  "description": "Cloudflare Workers shim for sharp (native image processing not supported)",
+  "main": "index.js",
+  "exports": {
+    ".": {
+      "require": "./index.js",
+      "import": "./index.mjs",
+      "default": "./index.js"
+    },
+    "./dist/sharp.cjs": "./index.js",
+    "./dist/sharp.js": "./index.js"
+  }
+}
