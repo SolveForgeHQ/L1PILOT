@@ -13,6 +13,8 @@ import {
   Zap,
   Coins,
   Plus,
+  AlertCircle,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CodeBlockViewer } from "@/components/chat/code-block-viewer";
@@ -76,16 +78,133 @@ const QUICK_PROMPTS = [
   },
 ];
 
+function UserChatAvatar({
+  avatarUrl,
+  initial,
+}: {
+  avatarUrl: string | null;
+  initial: string;
+}) {
+  const [imageError, setImageError] = useState(false);
+
+  if (avatarUrl && !imageError) {
+    return (
+      <img
+        src={avatarUrl}
+        alt="User"
+        referrerPolicy="no-referrer"
+        onError={() => setImageError(true)}
+        className="h-full w-full object-cover"
+      />
+    );
+  }
+
+  if (initial && initial !== "U") {
+    return <span className="text-xs font-bold text-violet-100">{initial}</span>;
+  }
+
+  return <User className="h-4 w-4 text-violet-200" />;
+}
+
+const DAILY_FREE_MESSAGE_LIMIT = 5;
+
+function getTodayDateString(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function getLocalDailyMessageCount(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const raw = localStorage.getItem("l1pilot_daily_messages");
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw);
+    if (parsed.date === getTodayDateString()) {
+      return Number(parsed.count) || 0;
+    }
+    return 0;
+  } catch {
+    return 0;
+  }
+}
+
+function setLocalDailyMessageCount(count: number) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(
+      "l1pilot_daily_messages",
+      JSON.stringify({
+        date: getTodayDateString(),
+        count,
+      })
+    );
+  } catch {
+    // ignore
+  }
+}
+
 export function ChatClient() {
   const { user } = useAuth();
   // Use a stable Supabase client instance (not recreated on every render)
   const supabase = useMemo(() => createClient(), []);
+
+  const userAvatarUrl =
+    user?.user_metadata?.avatar_url ||
+    user?.user_metadata?.picture ||
+    null;
+  const userInitial = (
+    user?.user_metadata?.full_name?.[0] ||
+    user?.email?.[0] ||
+    "U"
+  ).toUpperCase();
 
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [isMobileOrAndroid, setIsMobileOrAndroid] = useState(true);
   const [sessionReady, setSessionReady] = useState(false);
+  const [dailyUsageCount, setDailyUsageCount] = useState<number>(0);
+
+  // Sync daily message usage from localStorage and Supabase
+  useEffect(() => {
+    const local = getLocalDailyMessageCount();
+    setDailyUsageCount(local);
+
+    const syncWithDb = async () => {
+      try {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+        if (!currentUser) return;
+
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const { count, error } = await supabase
+          .from("messages")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", currentUser.id)
+          .eq("role", "user")
+          .gte("created_at", startOfDay.toISOString());
+
+        if (!error && typeof count === "number") {
+          const highest = Math.max(local, count);
+          setDailyUsageCount(highest);
+          setLocalDailyMessageCount(highest);
+        }
+      } catch (err) {
+        console.error("Error syncing daily count:", err);
+      }
+    };
+
+    syncWithDb();
+  }, [supabase, user]);
+
+  const isLimitReached = dailyUsageCount >= DAILY_FREE_MESSAGE_LIMIT;
+  const remainingMessages = Math.max(
+    0,
+    DAILY_FREE_MESSAGE_LIMIT - dailyUsageCount
+  );
 
   // Chat History & Sidebar State
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -414,6 +533,7 @@ export function ChatClient() {
   const handleSendMessage = async (textToSend?: string) => {
     const messageContent = (textToSend || input).trim();
     if (!messageContent || isThinking) return;
+    if (isLimitReached) return;
 
     // Always fetch a fresh user — avoids stale auth state causing 403 on Supabase writes
     const { data: { user: freshUser } } = await supabase.auth.getUser();
@@ -519,11 +639,18 @@ export function ChatClient() {
 
 
     try {
+      // Fetch session token to pass to API for limit checking
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const authToken = session?.access_token;
+
       // Call Google Gemini API route
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         },
         body: JSON.stringify({
           messages: newMessages.map((m) => ({
@@ -538,6 +665,11 @@ export function ChatClient() {
       if (!response.ok) {
         throw new Error(data.error || `HTTP ${response.status}`);
       }
+
+      // Increment daily usage count
+      const newCount = dailyUsageCount + 1;
+      setDailyUsageCount(newCount);
+      setLocalDailyMessageCount(newCount);
 
       const cleanReply = stripEmojis(
         data.reply || "I could not generate a response. Please try again."
@@ -631,8 +763,12 @@ export function ChatClient() {
             </Link>
 
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-l1-primary text-white shadow-md shadow-l1-primary/30">
-                <Bot className="h-5 w-5" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0B0D17] border border-l1-primary/30 shadow-md shadow-l1-primary/20 overflow-hidden">
+                <img
+                  src="/robot-avatar.jpg"
+                  alt="L1Pilot AI"
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div>
                 <h1 className="font-heading text-base sm:text-lg font-bold text-white tracking-tight">
@@ -653,6 +789,17 @@ export function ChatClient() {
               <Plus className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">New Chat</span>
             </Button>
+            {user && (
+              <div
+                className="h-8 w-8 rounded-xl bg-gradient-to-br from-l1-primary to-violet-700 flex items-center justify-center text-white text-xs font-bold shadow-md border border-white/10 overflow-hidden shrink-0"
+                title={user.email || "User profile"}
+              >
+                <UserChatAvatar
+                  avatarUrl={userAvatarUrl}
+                  initial={userInitial}
+                />
+              </div>
+            )}
           </div>
         </header>
 
@@ -668,16 +815,23 @@ export function ChatClient() {
               >
                 {/* Avatar */}
                 <div
-                  className={`flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md ${
+                  className={`flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md overflow-hidden ${
                     msg.role === "user"
                       ? "bg-violet-600/80 border border-violet-400/30"
-                      : "bg-l1-primary/20 border border-l1-primary/40 text-l1-primary"
+                      : "bg-[#0B0D17] border border-l1-primary/30"
                   }`}
                 >
                   {msg.role === "user" ? (
-                    <User className="h-4 w-4 text-violet-200" />
+                    <UserChatAvatar
+                      avatarUrl={userAvatarUrl}
+                      initial={userInitial}
+                    />
                   ) : (
-                    <Bot className="h-4.5 w-4.5 text-l1-primary" />
+                    <img
+                      src="/robot-avatar.jpg"
+                      alt="L1Pilot AI"
+                      className="h-full w-full object-cover"
+                    />
                   )}
                 </div>
 
@@ -712,8 +866,12 @@ export function ChatClient() {
             {/* Thinking Loading State Indicator */}
             {isThinking && (
               <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-l1-primary/20 border border-l1-primary/40 text-l1-primary shadow-md">
-                  <Bot className="h-4.5 w-4.5 text-l1-primary animate-pulse" />
+                <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-[#0B0D17] border border-l1-primary/30 shadow-md overflow-hidden">
+                  <img
+                    src="/robot-avatar.jpg"
+                    alt="L1Pilot AI"
+                    className="h-full w-full object-cover animate-pulse"
+                  />
                 </div>
                 <div className="p-4 rounded-2xl rounded-tl-sm bg-[#1E293B]/80 border border-white/10 text-l1-text-muted text-sm flex items-center gap-2 shadow-md">
                   <span className="text-xs font-medium text-l1-text-muted">
@@ -758,35 +916,66 @@ export function ChatClient() {
               </div>
             )}
 
-            {/* Form Input */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSendMessage();
-              }}
-              className="relative flex items-end gap-2 p-2 rounded-2xl border border-white/10 bg-[#0F172A]/90 focus-within:border-l1-primary focus-within:ring-1 focus-within:ring-l1-primary transition-all shadow-inner"
-            >
-              <textarea
-                ref={textareaRef}
-                rows={1}
-                value={input}
-                onChange={handleInput}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask L1Pilot AI anything about Avalanche L1 setup, genesis specs..."
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none resize-none max-h-36 overflow-y-auto leading-relaxed"
-              />
-              <Button
-                type="submit"
-                size="icon"
-                disabled={!input.trim() || isThinking}
-                className="h-9 w-9 rounded-xl bg-l1-primary hover:bg-l1-primary-hover disabled:opacity-40 disabled:hover:bg-l1-primary text-white shadow-md shadow-l1-primary/30 shrink-0 cursor-pointer transition-all"
+            {/* Daily limit reached — show upgrade banner instead of form */}
+            {isLimitReached ? (
+              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 flex flex-col gap-3">
+                <div className="flex items-center gap-2.5">
+                  <Lock className="h-4 w-4 text-amber-400 shrink-0" />
+                  <p className="text-sm font-semibold text-amber-300">
+                    Daily limit reached — 5 messages used
+                  </p>
+                </div>
+                <p className="text-xs text-amber-200/70 leading-relaxed">
+                  You have used all 5 free AI messages for today. Your limit resets at midnight.
+                  Upgrade to Pro for unlimited access.
+                </p>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="/pricing"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    <Zap className="h-3.5 w-3.5" />
+                    Upgrade to Pro
+                  </a>
+                  <span className="text-[11px] text-amber-200/50">Resets at midnight</span>
+                </div>
+              </div>
+            ) : (
+              /* Form Input */
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendMessage();
+                }}
+                className="relative flex items-end gap-2 p-2 rounded-2xl border border-white/10 bg-[#0F172A]/90 focus-within:border-l1-primary focus-within:ring-1 focus-within:ring-l1-primary transition-all shadow-inner"
               >
-                <Send className="h-4 w-4" />
-              </Button>
-            </form>
+                <textarea
+                  ref={textareaRef}
+                  rows={1}
+                  value={input}
+                  onChange={handleInput}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask L1Pilot AI anything about Avalanche L1 setup, genesis specs..."
+                  className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none resize-none max-h-36 overflow-y-auto leading-relaxed"
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={!input.trim() || isThinking}
+                  className="h-9 w-9 rounded-xl bg-l1-primary hover:bg-l1-primary-hover disabled:opacity-40 disabled:hover:bg-l1-primary text-white shadow-md shadow-l1-primary/30 shrink-0 cursor-pointer transition-all"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+            )}
 
-            <div className="flex items-center justify-end px-1 text-[11px] text-l1-text-muted/60">
+            <div className="flex items-center justify-between px-1 text-[11px] text-l1-text-muted/60">
               <span>L1Pilot AI v1.0</span>
+              {!isLimitReached && user && (
+                <span className={remainingMessages <= 2 ? "text-amber-400/80" : ""}>
+                  {remainingMessages} / {DAILY_FREE_MESSAGE_LIMIT} messages remaining today
+                </span>
+              )}
             </div>
           </div>
         </footer>

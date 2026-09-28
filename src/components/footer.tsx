@@ -33,8 +33,12 @@ export function Footer() {
           {/* Brand column */}
           <div className="flex flex-col gap-4 sm:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 w-fit">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-l1-primary">
-                <Rocket className="h-4 w-4 text-white" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0B0D17] border border-l1-primary/30 overflow-hidden">
+                <img
+                  src="/robot-avatar.jpg"
+                  alt="L1Pilot Logo"
+                  className="h-full w-full object-cover"
+                />
               </div>
               <span className="text-xl font-bold text-l1-text">L1Pilot</span>
             </Link>

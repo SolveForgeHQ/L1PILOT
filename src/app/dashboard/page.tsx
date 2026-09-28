@@ -270,9 +270,10 @@ export default async function DashboardPage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-l1-text-muted">AI Credits</span>
-                    <span className="text-white text-xs font-medium">Unlimited</span>
+                    <span className="text-l1-text-muted">Daily Allowance</span>
+                    <span className="text-violet-300 text-xs font-medium">5 chats / day</span>
                   </div>
+
                 </div>
 
                 <Separator className="bg-white/5" />

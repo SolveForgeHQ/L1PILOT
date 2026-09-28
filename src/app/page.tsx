@@ -21,8 +21,11 @@ import {
   User,
   Users,
   Cloud,
-  BookOpen
+  BookOpen,
+  Sparkles,
+  Zap
 } from "lucide-react";
+
 
 export default function HomePage() {
   return (
@@ -283,6 +286,7 @@ export default function HomePage() {
             <AnimatedSection>
               <SectionHeader 
                 title="Start Free. Upgrade When You're Ready." 
+                description="Everything you need to configure and launch an Avalanche L1 chain."
                 align="center"
               />
             </AnimatedSection>
@@ -290,56 +294,108 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
               {/* Free Plan */}
               <AnimatedSection delay={0.1}>
-                <Card className="bg-l1-surface border-l1-border h-full flex flex-col relative overflow-hidden">
-                  <div className="absolute top-0 w-full h-1 bg-l1-text-muted/30" />
+                <Card className="bg-l1-surface/80 border-l1-border h-full flex flex-col justify-between relative overflow-hidden backdrop-blur-sm">
+                  <div className="absolute top-0 w-full h-1 bg-l1-primary/40" />
                   <CardHeader>
-                    <CardTitle className="text-2xl font-bold">Free Plan</CardTitle>
-                    <CardDescription className="text-l1-text-muted mt-2 text-base">Perfect for getting started and exploring options.</CardDescription>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-2xl font-bold">Free Plan</CardTitle>
+                      <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-medium">
+                        Active Free Tier
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-l1-text-muted mt-2 text-base">
+                      Perfect for getting started and exploring options.
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex-1">
-                    <ul className="space-y-4">
-                      {["AI Chat (limited)", "Basic configuration generator", "Core explanations"].map((feature, i) => (
-                        <li key={i} className="flex items-center gap-3">
-                          <CheckCircle className="w-5 h-5 text-l1-primary" />
-                          <span>{feature}</span>
+                  <CardContent className="flex-1 flex flex-col gap-6">
+                    {/* Usage / Billing Label */}
+                    <div className="rounded-xl border border-violet-500/20 bg-violet-500/10 p-3.5 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-300 shrink-0">
+                          <Sparkles className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-white">Daily Free Limit</p>
+                          <p className="text-[11px] text-violet-200/90 font-medium">5 AI conversations per day</p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">
+                        Included
+                      </span>
+                    </div>
+
+                    <ul className="space-y-3.5">
+                      {[
+                        "AI chat for Avalanche L1 configuration (limited)",
+                        "Basic Genesis and Config file generation",
+                        "Clear explanations of key settings (Permissioned vs Permissionless, fees, etc.)",
+                        "Basic use-case guidance (Gaming, DeFi, RWA, Enterprise)",
+                        "Download generated files",
+                        "Limited saved configurations",
+                        "Limited chat history",
+                      ].map((feature, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <CheckCircle className="w-4 h-4 text-violet-400 shrink-0 mt-0.5" />
+                          <span className="text-sm text-l1-text-muted leading-relaxed">{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </CardContent>
                   <div className="p-6 pt-0 mt-auto">
-                    <WaitlistButton className="w-full bg-l1-primary hover:bg-l1-primary-hover text-white cursor-pointer">
-                      Get Started Free
-                    </WaitlistButton>
+                    <Link href="/chat" className="w-full block">
+                      <Button className="w-full bg-l1-primary hover:bg-l1-primary-hover text-white cursor-pointer shadow-lg shadow-l1-primary/25 font-semibold">
+                        Start Building Free
+                      </Button>
+                    </Link>
                   </div>
                 </Card>
               </AnimatedSection>
 
               {/* Pro Plan */}
               <AnimatedSection delay={0.2}>
-                <Card className="bg-l1-surface border-l1-primary/50 shadow-[0_0_30px_rgba(124,58,237,0.1)] h-full flex flex-col relative overflow-hidden">
+                <Card className="bg-l1-surface/80 border-l1-primary/50 shadow-[0_0_30px_rgba(124,58,237,0.1)] h-full flex flex-col justify-between relative overflow-hidden backdrop-blur-sm">
                   <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-l1-primary to-l1-secondary" />
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-2xl font-bold">Pro Plan</CardTitle>
-                      <Badge variant="secondary" className="bg-l1-primary/20 text-l1-primary hover:bg-l1-primary/30 border-none">
+                      <Badge variant="secondary" className="bg-l1-primary/20 text-violet-300 text-xs font-semibold">
                         Coming Soon
                       </Badge>
                     </div>
-                    <CardDescription className="text-l1-text-muted mt-2 text-base">For serious teams ready to launch to mainnet.</CardDescription>
+                    <CardDescription className="text-l1-text-muted mt-2 text-base">
+                      For serious teams ready to launch to mainnet.
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex-1">
-                    <ul className="space-y-4">
-                      {["Unlimited AI usage", "Advanced config generation", "Priority responses", "Team features", "Full monitoring tools (future)"].map((feature, i) => (
-                        <li key={i} className="flex items-center gap-3">
-                          <CheckCircle className="w-5 h-5 text-l1-primary" />
-                          <span>{feature}</span>
+                  <CardContent className="flex-1 flex flex-col gap-6">
+                    {/* Pro Highlight Label */}
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-3.5 flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-l1-primary/20 flex items-center justify-center text-l1-primary shrink-0">
+                        <Zap className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-white">Full Production Suite</p>
+                        <p className="text-[11px] text-l1-text-muted">Uncapped generations & team tooling</p>
+                      </div>
+                    </div>
+
+                    <ul className="space-y-3.5">
+                      {[
+                        "Unlimited AI usage",
+                        "Advanced configuration generation",
+                        "More templates",
+                        "Priority responses",
+                        "Full history and saved projects",
+                      ].map((feature, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <CheckCircle className="w-4 h-4 text-l1-primary shrink-0 mt-0.5" />
+                          <span className="text-sm text-l1-text-muted leading-relaxed">{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </CardContent>
                   <div className="p-6 pt-0 mt-auto">
-                    <WaitlistButton variant="outline" className="w-full border-l1-primary/50 hover:bg-l1-primary/10 text-l1-text cursor-pointer">
-                      Join Waitlist
+                    <WaitlistButton variant="outline" className="w-full border-l1-primary/50 hover:bg-l1-primary/10 text-l1-text cursor-pointer font-semibold">
+                      Join Pro Waitlist
                     </WaitlistButton>
                   </div>
                 </Card>
@@ -347,6 +403,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
 
         {/* Section 8: Final CTA */}
         <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">

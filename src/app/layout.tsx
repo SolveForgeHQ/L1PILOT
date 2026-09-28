@@ -26,12 +26,39 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://l1pilot.0xchronosfi.workers.dev"
+  ),
   title: {
     default: "L1Pilot — AI-Powered Avalanche L1 Management",
     template: "%s | L1Pilot",
   },
   description:
     "L1Pilot is your intelligent assistant for creating, configuring, and operating Avalanche L1s. Get clear guidance, auto-generated configs, and expert help.",
+  openGraph: {
+    title: "L1Pilot — AI Co-Pilot for Avalanche L1s",
+    description:
+      "Design & configure Avalanche L1s faster. Intelligent guidance, auto-generated configs, and expert help.",
+    url: "/",
+    siteName: "L1Pilot",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1024,
+        height: 535,
+        alt: "L1Pilot - AI Co-Pilot for Avalanche L1s",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "L1Pilot — AI Co-Pilot for Avalanche L1s",
+    description:
+      "Design & configure Avalanche L1s faster. Intelligent guidance, auto-generated configs, and expert help.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

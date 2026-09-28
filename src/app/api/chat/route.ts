@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 const AVALANCHE_SYSTEM_PROMPT = `You are L1Pilot AI, an expert Avalanche L1 configuration assistant.
 Your goal is to help users design accurate, production-ready Avalanche L1s (Subnets) and generate correct Genesis and Config files.
@@ -74,6 +75,53 @@ export async function POST(req: Request) {
         { error: "Invalid request payload: messages array required." },
         { status: 400 }
       );
+    }
+
+    // Enforce daily 5-message limit on Free Plan
+    const authHeader = req.headers.get("authorization");
+    if (
+      authHeader &&
+      authHeader.startsWith("Bearer ") &&
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) {
+      const token = authHeader.substring(7).trim();
+      if (token) {
+        try {
+          const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            { auth: { persistSession: false } }
+          );
+          const {
+            data: { user },
+          } = await supabase.auth.getUser(token);
+
+          if (user) {
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
+
+            const { count } = await supabase
+              .from("messages")
+              .select("*", { count: "exact", head: true })
+              .eq("user_id", user.id)
+              .eq("role", "user")
+              .gte("created_at", startOfDay.toISOString());
+
+            if (typeof count === "number" && count >= 5) {
+              return NextResponse.json(
+                {
+                  error:
+                    "Daily free limit reached (5 messages per day). Please upgrade to Pro for unlimited AI messages.",
+                },
+                { status: 429 }
+              );
+            }
+          }
+        } catch (authErr) {
+          console.error("Auth limit check error:", authErr);
+        }
+      }
     }
 
     // Format chat history for Gemini API

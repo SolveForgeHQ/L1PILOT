@@ -78,8 +78,12 @@ export function Navbar() {
       <nav className="pointer-events-auto w-full max-w-5xl h-16 flex items-center justify-between px-4 sm:px-6 rounded-2xl border border-white/10 bg-l1-bg/75 backdrop-blur-xl shadow-2xl shadow-black/40 ring-1 ring-white/5 transition-all">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group cursor-pointer">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-l1-primary shadow-md shadow-l1-primary/30 group-hover:scale-105 transition-transform">
-            <Rocket className="h-4.5 w-4.5 text-white" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0B0D17] border border-l1-primary/30 shadow-md shadow-l1-primary/30 group-hover:scale-105 transition-transform overflow-hidden">
+            <img
+              src="/robot-avatar.jpg"
+              alt="L1Pilot Logo"
+              className="h-full w-full object-cover"
+            />
           </div>
           <span className="text-xl font-bold tracking-tight text-l1-text group-hover:text-l1-primary transition-colors">
             L1Pilot
@@ -201,8 +205,12 @@ export function Navbar() {
           >
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2.5 text-l1-text">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-l1-primary">
-                  <Rocket className="h-4 w-4 text-white" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#0B0D17] border border-l1-primary/30 overflow-hidden">
+                  <img
+                    src="/robot-avatar.jpg"
+                    alt="L1Pilot Logo"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
                 L1Pilot
               </SheetTitle>

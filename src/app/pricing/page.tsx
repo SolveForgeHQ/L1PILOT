@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Sparkles, Zap } from "lucide-react";
 import Link from "next/link";
 
 import { AnimatedSection } from "@/components/animated-section";
@@ -29,21 +29,21 @@ export const metadata: Metadata = {
 };
 
 const freePlanFeatures = [
-  "AI Chat (limited messages per day)",
-  "Basic configuration generator",
-  "Core L1 concept explanations",
-  "Community support",
+  "AI chat for Avalanche L1 configuration (limited)",
+  "Basic Genesis and Config file generation",
+  "Clear explanations of key settings (Permissioned vs Permissionless, fees, etc.)",
+  "Basic use-case guidance (Gaming, DeFi, RWA, Enterprise)",
+  "Download generated files",
+  "Limited saved configurations",
+  "Limited chat history",
 ] as const;
 
 const proPlanFeatures = [
-  "Everything in Free",
-  "Unlimited AI conversations",
-  "Advanced config generation with validation",
-  "Priority AI responses",
-  "Team collaboration features",
-  "Full monitoring tools (coming soon)",
-  "Export to multiple formats",
-  "Priority support",
+  "Unlimited AI usage",
+  "Advanced configuration generation",
+  "More templates",
+  "Priority responses",
+  "Full history and saved projects",
 ] as const;
 
 const faqs = [
@@ -107,30 +107,53 @@ export default function PricingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
             {/* Free Plan */}
             <AnimatedSection delay={0}>
-              <Card className="h-full border-l1-border bg-l1-surface/60 backdrop-blur-sm [--card-spacing:--spacing(6)]">
+              <Card className="h-full border-l1-border bg-l1-surface/60 backdrop-blur-sm flex flex-col justify-between [--card-spacing:--spacing(6)]">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-l1-text">
-                    Free
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl font-bold text-l1-text">
+                      Free Plan
+                    </CardTitle>
+                    <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-medium">
+                      Active Free Tier
+                    </Badge>
+                  </div>
                   <CardDescription className="text-l1-text-muted">
-                    Perfect for getting started
+                    Perfect for getting started and designing your L1
                   </CardDescription>
                 </CardHeader>
 
-                <CardContent className="flex flex-col gap-8">
-                  {/* Price */}
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-bold tracking-tight text-l1-text">
-                      $0
-                    </span>
-                    <span className="text-lg text-l1-text-muted">/month</span>
+                <CardContent className="flex flex-col gap-6 flex-1">
+                  {/* Price & Usage Limit Label */}
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-bold tracking-tight text-l1-text">
+                        $0
+                      </span>
+                      <span className="text-lg text-l1-text-muted">/month</span>
+                    </div>
+
+                    {/* Free limit / usage label */}
+                    <div className="rounded-xl border border-violet-500/20 bg-violet-500/10 p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-300 shrink-0">
+                          <Sparkles className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-white">Daily Free Limit</p>
+                          <p className="text-[11px] text-violet-200/90 font-medium">5 AI conversations per day</p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">
+                        Included
+                      </span>
+                    </div>
                   </div>
 
                   {/* Features */}
-                  <ul className="flex flex-col gap-3.5">
+                  <ul className="flex flex-col gap-3">
                     {freePlanFeatures.map((feature) => (
                       <li key={feature} className="flex items-start gap-3">
-                        <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-l1-accent" />
+                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-violet-400" />
                         <span className="text-sm text-l1-text-muted leading-relaxed">
                           {feature}
                         </span>
@@ -139,57 +162,74 @@ export default function PricingPage() {
                   </ul>
 
                   {/* CTA */}
-                  <WaitlistButton
-                    size="lg"
-                    className="w-full bg-l1-primary hover:bg-l1-primary-hover text-white cursor-pointer shadow-lg shadow-l1-primary/25"
-                  >
-                    Get Started Free
-                  </WaitlistButton>
+                  <div className="mt-auto pt-4">
+                    <Link href="/chat" className="w-full block">
+                      <Button
+                        size="lg"
+                        className="w-full bg-l1-primary hover:bg-l1-primary-hover text-white cursor-pointer shadow-lg shadow-l1-primary/25 font-semibold"
+                      >
+                        Start Building Free
+                      </Button>
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             </AnimatedSection>
 
             {/* Pro Plan */}
             <AnimatedSection delay={0.1}>
-              <Card className="relative h-full border-l1-primary/50 bg-l1-surface/60 backdrop-blur-sm ring-1 ring-l1-primary/30 [--card-spacing:--spacing(6)]">
+              <Card className="relative h-full border-l1-primary/50 bg-l1-surface/60 backdrop-blur-sm ring-1 ring-l1-primary/30 flex flex-col justify-between [--card-spacing:--spacing(6)]">
                 {/* Subtle glow behind the card */}
                 <div className="pointer-events-none absolute -inset-px rounded-xl bg-l1-primary/5" />
 
                 <CardHeader className="relative">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between">
                     <CardTitle className="text-xl font-bold text-l1-text">
-                      Pro
+                      Pro Plan
                     </CardTitle>
-                    <Badge className="border-l1-primary/30 bg-l1-primary/10 text-l1-primary text-xs">
+                    <Badge className="border-l1-primary/30 bg-l1-primary/20 text-violet-300 text-xs font-semibold">
                       Coming Soon
                     </Badge>
                   </div>
                   <CardDescription className="text-l1-text-muted">
-                    For serious builders and teams
+                    For serious builders, ecosystems, and teams
                   </CardDescription>
                 </CardHeader>
 
-                <CardContent className="relative flex flex-col gap-8">
-                  {/* Price */}
-                  <div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-bold tracking-tight text-l1-text">
-                        $49
-                      </span>
-                      <span className="text-lg text-l1-text-muted">
-                        /month
-                      </span>
+                <CardContent className="relative flex flex-col gap-6 flex-1">
+                  {/* Price & Highlight */}
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-5xl font-bold tracking-tight text-l1-text">
+                          $49
+                        </span>
+                        <span className="text-lg text-l1-text-muted">
+                          /month
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-l1-primary font-medium">
+                        (Early bird pricing on launch)
+                      </p>
                     </div>
-                    <p className="mt-1 text-sm text-l1-primary font-medium">
-                      (Early bird pricing)
-                    </p>
+
+                    {/* Pro tier highlight */}
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-3 flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-l1-primary/20 flex items-center justify-center text-l1-primary shrink-0">
+                        <Zap className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-white">Full Production Suite</p>
+                        <p className="text-[11px] text-l1-text-muted">Uncapped generations & team tooling</p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Features */}
-                  <ul className="flex flex-col gap-3.5">
+                  <ul className="flex flex-col gap-3">
                     {proPlanFeatures.map((feature) => (
                       <li key={feature} className="flex items-start gap-3">
-                        <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-l1-accent" />
+                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-l1-primary" />
                         <span className="text-sm text-l1-text-muted leading-relaxed">
                           {feature}
                         </span>
@@ -198,19 +238,22 @@ export default function PricingPage() {
                   </ul>
 
                   {/* CTA */}
-                  <WaitlistButton
-                    variant="outline"
-                    size="lg"
-                    className="w-full border-l1-primary/50 text-l1-primary hover:bg-l1-primary/10 hover:text-l1-primary cursor-pointer"
-                  >
-                    Join Waitlist
-                  </WaitlistButton>
+                  <div className="mt-auto pt-4">
+                    <WaitlistButton
+                      variant="outline"
+                      size="lg"
+                      className="w-full border-l1-primary/50 text-l1-primary hover:bg-l1-primary/10 hover:text-l1-primary cursor-pointer font-semibold"
+                    >
+                      Join Pro Waitlist
+                    </WaitlistButton>
+                  </div>
                 </CardContent>
               </Card>
             </AnimatedSection>
           </div>
         </div>
       </section>
+
 
       {/* FAQ Section */}
       <section className="py-16 sm:py-24 border-t border-l1-border">
