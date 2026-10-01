@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileCode, MessageSquare, Zap, Settings } from "lucide-react";
+import { FileCode, MessageSquare, Settings } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { recoverConfigsFromLocalStorage } from "@/lib/configurations-store";
 
@@ -70,14 +70,6 @@ export function DashboardStats({
       bg: "bg-sky-500/10",
     },
     {
-      label: "Active L1s",
-      value: "0",
-      desc: "Deployed chains",
-      icon: Zap,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/10",
-    },
-    {
       label: "Account Status",
       value: "Active",
       desc: "Free plan — all features",
@@ -88,7 +80,7 @@ export function DashboardStats({
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {stats.map((stat, i) => {
         const Icon = stat.icon;
         return (
